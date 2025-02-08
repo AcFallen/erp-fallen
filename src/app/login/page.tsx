@@ -1,6 +1,7 @@
-import { GalleryVerticalEnd } from "lucide-react"
+import { GalleryVerticalEnd } from "lucide-react";
 
-import { LoginForm } from "@/components/login-form"
+import { LoginForm } from "@/components/login-form";
+import { ModeToggle } from "@/components/toogle-mode";
 
 export default function LoginPage() {
   return (
@@ -12,8 +13,9 @@ export default function LoginPage() {
           </div>
           Acme Inc.
         </a>
+        <ModeToggle />
         <LoginForm />
       </div>
     </div>
-  )
+  );
 }

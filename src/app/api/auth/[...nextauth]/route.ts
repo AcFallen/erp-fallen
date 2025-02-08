@@ -3,8 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import type { JWT } from "next-auth/jwt";
-import type { Session } from "next-auth";
+
 
 declare module "next-auth" {
   interface User {

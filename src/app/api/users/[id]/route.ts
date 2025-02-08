@@ -1,12 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> } // 🚀 `params` ahora es una promesa
 ) {
   try {
-    const user = await prisma.user.findUnique({ where: { id: params.id } });
+    const { id } = await params; // 🚀 Hacemos `await` a params antes de extraer `id`
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -16,36 +20,48 @@ export async function GET(
     }
 
     return NextResponse.json(user);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Error desconocido" },
+      { status: 500 }
+    );
   }
 }
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> } // 🚀 `params` ahora es una promesa
 ) {
   try {
-    const { name, email, role } = await req.json();
+    const { id } = await params; // 🚀 Hacemos `await` a params antes de extraer `id`
+    const data = await req.json();
 
     const user = await prisma.user.update({
-      where: { id: params.id },
-      data: { name, email, role },
+      where: { id },
+      data,
     });
 
     return NextResponse.json(user);
-  } catch (error : any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Error desconocido" },
+      { status: 500 }
+    );
   }
 }
 
-
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    try {
-      await prisma.user.delete({ where: { id: params.id } });
-      return NextResponse.json({ message: "Usuario eliminado" });
-    } catch (error : any) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> } // 🚀 `params` ahora es una promesa
+) {
+  try {
+    const { id } = await params; // 🚀 Hacemos `await` a params antes de extraer `id`
+    await prisma.user.delete({ where: { id } });
+    return NextResponse.json({ message: "Usuario eliminado" });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Error desconocido" },
+      { status: 500 }
+    );
   }
-  
+}
