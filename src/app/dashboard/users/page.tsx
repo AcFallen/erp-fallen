@@ -40,7 +40,7 @@ const UserPage = () => {
         accessorKey: "role",
         header: "Role",
         cell: ({ row }) => (
-          <Badge variant="default">{row.getValue("role")}</Badge>
+          <Badge variant="info">{row.getValue("role")}</Badge>
         ),
       },
       {

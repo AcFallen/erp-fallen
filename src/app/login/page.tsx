@@ -13,7 +13,6 @@ export default function LoginPage() {
           </div>
           Acme Inc.
         </a>
-        <ModeToggle />
         <LoginForm />
       </div>
     </div>
