@@ -1,19 +1,69 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+"use client";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  LoginFormSchema,
+  loginSchema,
+} from "@/app/login/schemas/login-form-schema";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormSchema>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "john@example.com",
+      password: "123456",
+    },
+  });
+
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const onSubmit = async (data: LoginFormSchema) => {
+    console.log(data);
+
+    setLoading(true);
+    setErrorMessage("");
+
+    const result = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false, // Evita la redirección automática de NextAuth
+    });
+
+    if (result?.error) {
+      setErrorMessage("Credenciales incorrectas");
+      setLoading(false);
+    } else {
+      toast.success("Sesión iniciada", {
+        position: "top-center",
+      });
+      router.push("/dashboard"); // Redirigir a /dashboard si el login es exitoso
+    }
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -24,7 +74,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-6">
               <div className="flex flex-col gap-4">
                 <Button variant="outline" className="w-full">
@@ -55,6 +105,7 @@ export function LoginForm({
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
+                    {...register("email")}
                     id="email"
                     type="email"
                     placeholder="m@example.com"
@@ -71,7 +122,12 @@ export function LoginForm({
                       Forgot your password?
                     </a>
                   </div>
-                  <Input id="password" type="password" required />
+                  <Input
+                    {...register("password")}
+                    id="password"
+                    type="password"
+                    required
+                  />
                 </div>
                 <Button type="submit" className="w-full">
                   Login
@@ -92,5 +148,5 @@ export function LoginForm({
         and <a href="#">Privacy Policy</a>.
       </div>
     </div>
-  )
+  );
 }

@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-
 declare module "next-auth" {
   interface User {
     id: string;
@@ -57,7 +56,7 @@ const authOptions: AuthOptions = {
         const token = jwt.sign(
           { id: user.id, email: user.email, role: user.role },
           process.env.NEXTAUTH_SECRET!,
-          { expiresIn: "7d" }
+          { expiresIn: "1d" }
         );
 
         return { ...user, token };
@@ -89,6 +88,7 @@ const authOptions: AuthOptions = {
   },
   session: {
     strategy: "jwt" as const,
+    maxAge: 60 * 60 * 24,
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
