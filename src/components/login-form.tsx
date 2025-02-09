@@ -42,8 +42,6 @@ export function LoginForm({
   const [errorMessage, setErrorMessage] = useState("");
 
   const onSubmit = async (data: LoginFormSchema) => {
-    console.log(data);
-
     setLoading(true);
     setErrorMessage("");
 
