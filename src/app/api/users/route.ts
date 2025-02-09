@@ -1,20 +1,17 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
+import { CreateUserDTO, createUserSchema } from "@/dtos/user.dto";
+import { ZodError } from "zod";
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password, role } = await req.json();
+    const body = await req.json();
+    const parsedData: CreateUserDTO = createUserSchema.parse(body);
 
-    if (!name || !email || !password) {
-      return NextResponse.json(
-        { error: "Todos los campos son obligatorios" },
-        { status: 400 }
-      );
-    }
-
-    // Verificar si el usuario ya existe
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.user.findUnique({
+      where: { email: parsedData.email },
+    });
     if (existingUser) {
       return NextResponse.json(
         { error: "El email ya está registrado" },
@@ -22,25 +19,35 @@ export async function POST(req: Request) {
       );
     }
 
-    // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(parsedData.password, 10);
 
-    // Crear el usuario
     const user = await prisma.user.create({
       data: {
-        name,
-        email,
+        name: parsedData.name,
+        email: parsedData.email,
         password: hashedPassword,
-        role: role || "USER",
+        role: parsedData.role || "USER",
       },
     });
 
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        {
+          error: error.errors.map((err) => ({
+            path: err.path,
+            message: err.message,
+          })),
+        },
+        { status: 400 }
+      );
     }
-    return NextResponse.json({ error: "Error desconocido" }, { status: 500 });
+
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }
 
@@ -53,6 +60,7 @@ export async function GET() {
         email: true,
         role: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
 

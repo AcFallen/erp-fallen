@@ -2,8 +2,6 @@
 
 import * as React from "react";
 import {
-  BookOpen,
-  Bot,
   Command,
   Frame,
   LayoutDashboard,
@@ -11,13 +9,10 @@ import {
   Map,
   PieChart,
   Send,
-  Settings2,
-  SquareTerminal,
   Users,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
