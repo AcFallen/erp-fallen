@@ -7,6 +7,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { getUserColumns } from "@/components/modules/users/user-columns";
+import { UserForm } from "@/components/modules/users/user-form";
 
 const UserPage = () => {
   const {
@@ -20,59 +22,21 @@ const UserPage = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const columns = useMemo<ColumnDef<User>[]>(
-    () => [
-      {
-        header: "#",
-        cell: ({ row }) => <span>{row.index + 1}</span>,
-      },
-      {
-        accessorKey: "name",
-        header: "Name",
-        cell: ({ row }) => <span>{row.getValue("name")}</span>,
-      },
-      {
-        accessorKey: "email",
-        header: "Email",
-        cell: ({ row }) => <span>{row.getValue("email")}</span>,
-      },
-      {
-        accessorKey: "role",
-        header: "Role",
-        cell: ({ row }) => (
-          <Badge variant="info">{row.getValue("role")}</Badge>
-        ),
-      },
-      {
-        accessorKey: "createdAt",
-        header: "Created At",
-        cell: ({ row }) => (
-          <span>
-            {format(new Date(row.original.createdAt), "dd/MM/yyyy HH:mm:ss")}
-          </span>
-        ),
-      },
-      {
-        accessorKey: "updatedAt",
-        header: "Updated At",
-        cell: ({ row }) => (
-          <span>
-            {format(new Date(row.original.updatedAt), "dd/MM/yyyy HH:mm:ss")}
-          </span>
-        ),
-      },
-    ],
-    []
-  );
+  const columns = useMemo<ColumnDef<User>[]>(() => getUserColumns(), []);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <DataTable columns={columns} data={users || []} />
-    </div>
+    <>
+      <div>
+        <UserForm />
+      </div>
+      <div className="grid grid-cols-1 gap-4">
+        <DataTable columns={columns} data={users || []} />
+      </div>
+    </>
   );
 };
 
