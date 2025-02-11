@@ -2,40 +2,49 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { NextRequest } from "next/server";
 
-// Función para configurar los encabezados CORS
-function setCorsHeaders(response: Response) {
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  return response;
-}
-
 export async function middleware(req: NextRequest) {
-  // Manejar solicitudes preflight (OPTIONS)
+  // Se crea la respuesta inicial para continuar con el flujo normal.
+  const res = NextResponse.next();
+
+  // Configuración original de CORS
+  res.headers.set("Access-Control-Allow-Origin", "*");
+  res.headers.set(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PATCH, PUT, PATCH , DELETE, OPTIONS"
+  );
+  res.headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization"
+  );
+
+  // Manejo de solicitudes preflight (OPTIONS)
   if (req.method === "OPTIONS") {
-    const response = new Response(null, { status: 204 });
-    return setCorsHeaders(response);
+    return new Response(null, { status: 204, headers: res.headers });
   }
 
-  // Obtener el token de autenticación
+  // Protección de rutas: se verifica el token con NextAuth
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  // Si no hay token, redirigir a /login
   if (!token) {
-    const response = NextResponse.redirect(new URL("/login", req.url));
-    return setCorsHeaders(response);
+    // Si la solicitud es a una ruta de API, se devuelve un error 401 (Unauthorized)
+    if (req.nextUrl.pathname.startsWith("/api/")) {
+      return new NextResponse(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: res.headers,
+      });
+    }
+    // Para rutas que no sean de API, se redirige a /login
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  // Si el usuario está autenticado, se continúa con la solicitud normal
-  const response = NextResponse.next();
-  return setCorsHeaders(response);
+  // Si el token existe, continúa normalmente.
+  return res;
 }
 
-// Configuración del matcher para aplicar la protección a todas las rutas excepto las que se quieran excluir.
-// En este ejemplo se excluyen rutas como "/login", recursos de Next.js y la API de autenticación.
+// Matcher para aplicar el middleware a todas las rutas excepto las que no deseas proteger
 export const config = {
   matcher: [
-    // Este matcher protege todas las rutas que NO comiencen con "login", "_next", "favicon.ico" o "api/auth"
-    "/((?!login|_next/static|_next/image|favicon.ico|api/auth).*)"
+    // Se excluyen las rutas: /login, recursos estáticos, favicon y la API de autenticación
+    "/((?!login|_next/static|_next/image|favicon.ico|api/auth).*)",
   ],
 };

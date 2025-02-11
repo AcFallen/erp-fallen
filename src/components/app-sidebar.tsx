@@ -47,7 +47,7 @@ const data = {
       items: [
         {
           title: "Usuarios",
-          url: "/dashboard/users",
+          url: "/users",
         },
       ],
     },

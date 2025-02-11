@@ -30,7 +30,10 @@ export function UserForm() {
           Nuevo Usuario
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]" hiddenCloseIcon>
+      <DialogContent
+        className="max-w-[calc(100vw-32px)] sm:max-w-[425px]"
+        hiddenCloseIcon
+      >
         <DialogHeader>
           <DialogTitle>Crear Usuario</DialogTitle>
           <DialogDescription>

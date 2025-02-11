@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { AppSidebar } from "../../components/app-sidebar";
+
 import {
   SidebarInset,
   SidebarProvider,
@@ -18,8 +18,9 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ModeToggle } from "@/components/toogle-mode";
+import { AppSidebar } from "./app-sidebar";
 
-export default function DashboardLayout({
+export default function DashboardLayoutProvider({
   children,
 }: {
   children: React.ReactNode;

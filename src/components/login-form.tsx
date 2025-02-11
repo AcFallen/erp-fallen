@@ -58,7 +58,7 @@ export function LoginForm({
       toast.success("Sesión iniciada", {
         position: "top-center",
       });
-      router.push("/dashboard"); // Redirigir a /dashboard si el login es exitoso
+      router.push("/"); // Redirigir a /dashboard si el login es exitoso
     }
   };
 
