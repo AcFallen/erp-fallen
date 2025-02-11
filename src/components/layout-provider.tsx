@@ -1,6 +1,5 @@
 "use client";
 import type React from "react";
-
 import {
   SidebarInset,
   SidebarProvider,
@@ -19,6 +18,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ModeToggle } from "@/components/toogle-mode";
 import { AppSidebar } from "./app-sidebar";
+import { useSession } from "next-auth/react";
+import { Command } from "lucide-react";
 
 export default function DashboardLayoutProvider({
   children,
@@ -26,6 +27,18 @@ export default function DashboardLayoutProvider({
   children: React.ReactNode;
 }) {
   const queryClient = new QueryClient();
+  const { data: session, status } = useSession();
+
+  if (status === "loading") {
+    return (
+      <div className="flex flex-col min-h-screen items-center justify-center">
+        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+          <Command className="size-4" />
+        </div>
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
