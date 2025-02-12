@@ -5,7 +5,10 @@ import toast from "react-hot-toast";
 
 export const getUsers = async (): Promise<User[]> => {
   const response = await axiosClient.get("/users");
-  return response.data;
+  const sortedUsers = response.data.sort((a: User, b: User) =>
+    a.updatedAt > b.updatedAt ? -1 : 1
+  );
+  return sortedUsers;
 };
 
 export const getUserById = async (id: string): Promise<User> => {
@@ -24,7 +27,6 @@ export const deleteUser = async (id: string) => {
 export const postUser = async (data: Partial<User>) => {
   try {
     const response = await axiosClient.post("/users", data);
-    toast.success("Usuario creado correctamente");
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

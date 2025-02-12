@@ -26,6 +26,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { User } from "@prisma/client";
+import { useCreateUser } from "@/mutations/userMutation";
 
 interface UserFormProps {
   user: User | null;
@@ -40,7 +41,7 @@ export function UserForm({
   openForm,
   setOpenForm,
 }: UserFormProps) {
-  const queryClient = useQueryClient();
+  const { mutate: createUser } = useCreateUser();
 
   const {
     register,
@@ -54,13 +55,11 @@ export function UserForm({
   });
 
   async function onSubmit(data: CreateUserDTO) {
-    try {
-      await postUser(data);
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      setOpenForm(false);
-    } catch (error) {
-      console.log(error);
-    }
+    createUser(data, {
+      onSuccess: () => {
+        setOpenForm(false);
+      },
+    });
   }
 
   useEffect(() => {
