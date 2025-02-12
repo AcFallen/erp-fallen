@@ -11,7 +11,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export const getUserColumns = (): ColumnDef<User>[] => [
+interface UserColumnsProps {
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  setOpenForm: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const getUserColumns = ({
+  setUser,
+  setOpenForm,
+}: UserColumnsProps): ColumnDef<User>[] => [
   {
     header: "#",
     cell: ({ row }) => <span>{row.index + 1}</span>,
@@ -63,7 +71,9 @@ export const getUserColumns = (): ColumnDef<User>[] => [
             <TooltipTrigger asChild>
               <Button
                 variant="warning"
-                onClick={() => console.log("Editar", row.original)}
+                onClick={() => {
+                  setUser(row.original), setOpenForm(true);
+                }}
                 size={"icon"}
               >
                 <Edit className="h-4 w-4" />

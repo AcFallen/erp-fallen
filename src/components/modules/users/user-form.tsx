@@ -13,72 +13,169 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { User } from "lucide-react";
+import { Save, User2 } from "lucide-react";
+import { createUserSchema, CreateUserDTO } from "@/dtos/user.dto";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { postUser } from "@/services/users/userService";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { User } from "@prisma/client";
 
-export function UserForm() {
+interface UserFormProps {
+  user: User | null;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  openForm: boolean;
+  setOpenForm: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export function UserForm({
+  user,
+  setUser,
+  openForm,
+  setOpenForm,
+}: UserFormProps) {
+  const queryClient = useQueryClient();
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+    watch,
+  } = useForm<CreateUserDTO>({
+    resolver: zodResolver(createUserSchema),
+  });
+
+  async function onSubmit(data: CreateUserDTO) {
+    try {
+      await postUser(data);
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setOpenForm(false);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name,
+        email: user.email,
+        password: "",
+        role: user.role,
+      });
+    } else {
+      reset({
+        name: "",
+        email: "",
+        password: "",
+        role: undefined,
+      });
+    }
+  }, [user]);
+
   return (
-    <Dialog>
+    <Dialog open={openForm} onOpenChange={setOpenForm}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <User className="mr-2 h-4 w-4" />
+          <User2 className="mr-2 h-4 w-4" />
           Nuevo Usuario
         </Button>
       </DialogTrigger>
       <DialogContent
         className="max-w-[calc(100vw-32px)] sm:max-w-[425px]"
         hiddenCloseIcon
+        onCloseAutoFocus={() => {
+          reset({
+            name: "",
+            email: "",
+            password: "",
+            role: undefined,
+          });
+          setUser(null);
+        }}
       >
+        {/* <pre>{JSON.stringify(watch(), null, 2)}</pre> */}
         <DialogHeader>
           <DialogTitle>Crear Usuario</DialogTitle>
           <DialogDescription>
             Este formulario permite crear un nuevo usuario.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Nombre
-            </Label>
-            <Input id="name" className="col-span-3" />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+          <div className="space-y-1">
+            <Label htmlFor="name">Nombre:</Label>
+            <Input {...register("name")} id="name" placeholder="Nombre" />
+            {errors.name && (
+              <p className="mt-2 text-xs text-red-500">{errors.name.message}</p>
+            )}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">
-              Email
-            </Label>
-            <Input id="email" className="col-span-3" />
+          <div className="space-y-1">
+            <Label htmlFor="email">Email:</Label>
+            <Input {...register("email")} id="email" placeholder="Email" />
+            {errors.email && (
+              <p className="mt-2 text-xs text-red-500">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="password" className="text-right">
-              Contraseña
-            </Label>
-            <Input id="password" className="col-span-3" />
+          <div className="space-y-1">
+            <Label htmlFor="password">Contraseña:</Label>
+            <Input
+              {...register("password")}
+              id="password"
+              placeholder="******"
+            />
+            {errors.password && (
+              <p className="mt-2 text-xs text-red-500">
+                {errors.password.message}
+              </p>
+            )}
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="rol" className="text-right">
-              Rol
-            </Label>
-            <Select>
-              <SelectTrigger className="col-span-3" id="rol">
-                <SelectValue placeholder="Seleccione un rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ADMIN">Administrador</SelectItem>
-                <SelectItem value="USER">Usuario</SelectItem>
-                <SelectItem value="GUEST">Invitado</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="space-y-1">
+            <Label htmlFor="rol">Rol:</Label>
+
+            <Controller
+              control={control}
+              name="role"
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger id="rol">
+                    <SelectValue placeholder="Seleccione un rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ADMIN">Administrador</SelectItem>
+                    <SelectItem value="USER">Usuario</SelectItem>
+                    <SelectItem value="GUEST">Invitado</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+
+            {errors.role && (
+              <p className="mt-2 text-xs text-red-500">{errors.role.message}</p>
+            )}
           </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit">Save changes</Button>
-        </DialogFooter>
+
+          <DialogFooter>
+            <Button type="submit">
+              <Save className=" h-4 w-4" />
+              Guardar
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
