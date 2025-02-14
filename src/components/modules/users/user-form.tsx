@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { User } from "@prisma/client";
-import { useCreateUser } from "@/mutations/userMutation";
+import { useCreateUser, useUpdateUser } from "@/mutations/userMutation";
 
 interface UserFormProps {
   user: User | null;
@@ -42,6 +42,7 @@ export function UserForm({
   setOpenForm,
 }: UserFormProps) {
   const { mutate: createUser } = useCreateUser();
+  const { mutate: updateUser } = useUpdateUser();
 
   const {
     register,
@@ -55,11 +56,22 @@ export function UserForm({
   });
 
   async function onSubmit(data: CreateUserDTO) {
-    createUser(data, {
-      onSuccess: () => {
-        setOpenForm(false);
-      },
-    });
+    if (user) {
+      updateUser(
+        { id: user.id, data },
+        {
+          onSuccess: () => {
+            setOpenForm(false);
+          }, 
+        }
+      );
+    } else {
+      createUser(data, {
+        onSuccess: () => {
+          setOpenForm(false);
+        },
+      });
+    }
   }
 
   useEffect(() => {
@@ -83,7 +95,7 @@ export function UserForm({
   return (
     <Dialog open={openForm} onOpenChange={setOpenForm}>
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button>
           <User2 className="mr-2 h-4 w-4" />
           Nuevo Usuario
         </Button>
@@ -171,7 +183,7 @@ export function UserForm({
           <DialogFooter>
             <Button type="submit">
               <Save className=" h-4 w-4" />
-              Guardar
+              {user ? "Actualizar" : "Crear"}
             </Button>
           </DialogFooter>
         </form>

@@ -14,11 +14,13 @@ import {
 interface UserColumnsProps {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   setOpenForm: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpenDelete: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const getUserColumns = ({
   setUser,
   setOpenForm,
+  setOpenDelete,
 }: UserColumnsProps): ColumnDef<User>[] => [
   {
     header: "#",
@@ -90,7 +92,9 @@ export const getUserColumns = ({
             <TooltipTrigger asChild>
               <Button
                 variant="destructive"
-                onClick={() => console.log("Eliminar", row.original)}
+                onClick={() => {
+                  setOpenDelete(true), setUser(row.original);
+                }}
                 size={"icon"}
               >
                 <Trash2 className="h-4 w-4" />

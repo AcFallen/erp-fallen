@@ -7,10 +7,12 @@ import { ColumnDef } from "@tanstack/react-table";
 import React, { useMemo, useState } from "react";
 import { getUserColumns } from "@/components/modules/users/user-columns";
 import { UserForm } from "@/components/modules/users/user-form";
+import { UserDeleteModal } from "@/components/modules/users/user-delete-modal";
 
 const UserPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [openForm, setOpenForm] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
 
   const {
     data: users,
@@ -24,7 +26,7 @@ const UserPage = () => {
   });
 
   const columns = useMemo<ColumnDef<User>[]>(
-    () => getUserColumns({ setUser , setOpenForm }),
+    () => getUserColumns({ setUser, setOpenForm, setOpenDelete }),
     []
   );
 
@@ -42,6 +44,7 @@ const UserPage = () => {
           setOpenForm={setOpenForm}
         />
       </div>
+      <UserDeleteModal open={openDelete} setOpen={setOpenDelete} user={user} />
       <div className="grid grid-cols-1 gap-4">
         <DataTable columns={columns} data={users || []} />
       </div>

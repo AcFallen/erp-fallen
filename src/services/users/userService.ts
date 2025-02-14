@@ -16,12 +16,14 @@ export const getUserById = async (id: string): Promise<User> => {
   return response.data;
 };
 
-export const updateUser = async (id: string, data: Partial<User>) => {
-  return await axiosClient.put(`/users/${id}`, data);
+export const patchUser = async (id: string, data: Partial<User>) => {
+  const response = await axiosClient.patch(`/users/${id}`, data);
+  return response.data;
 };
 
 export const deleteUser = async (id: string) => {
-  return await axiosClient.delete(`/users/${id}`);
+  const response = await axiosClient.delete(`/users/${id}`);
+  return response.data;
 };
 
 export const postUser = async (data: Partial<User>) => {
