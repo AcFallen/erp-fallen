@@ -2,15 +2,15 @@ import { createReadStream } from "fs";
 import path from "path";
 import { Readable } from "stream";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(
   req: Request,
-  { params }: { params: { file: string } }
+  { params }: { params: Promise<{ file: string }> }
 ) {
   // Esperar explícitamente los parámetros
-  const awaitedParams = await Promise.resolve(params);
-  const filePath = path.join(process.cwd(), "uploads", awaitedParams.file);
+  const { file } = await params;
+  const filePath = path.join(process.cwd(), "uploads", file);
 
   const session = await getServerSession(authOptions);
   if (!session) return new Response("Unauthorized", { status: 401 });
