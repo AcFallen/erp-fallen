@@ -10,6 +10,7 @@ declare module "next-auth" {
     email: string;
     role: string;
     token?: string;
+    name: string;
   }
 
   interface Session {
@@ -18,7 +19,7 @@ declare module "next-auth" {
   }
 }
 
-const authOptions: AuthOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -54,7 +55,7 @@ const authOptions: AuthOptions = {
 
         // Firmar JWT
         const token = jwt.sign(
-          { id: user.id, email: user.email, role: user.role },
+          { id: user.id, email: user.email, role: user.role, name: user.name },
           process.env.NEXTAUTH_SECRET!,
           { expiresIn: "1d" }
         );
@@ -73,6 +74,7 @@ const authOptions: AuthOptions = {
         token.email = user.email;
         token.role = user.role;
         token.accessToken = user.token;
+        token.name = user.name;
       }
       return token;
     },
@@ -81,6 +83,7 @@ const authOptions: AuthOptions = {
         id: token.id as string,
         email: token.email as string,
         role: token.role as string,
+        name: token.name as string,
       };
       session.accessToken = token.accessToken as string;
       return session;
