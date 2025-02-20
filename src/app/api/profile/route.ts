@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import { authOptions } from "../auth/[...nextauth]/route";
@@ -18,13 +18,13 @@ export async function POST(req: Request) {
 
   // Convertir directamente a File ya que no usamos multiple
   const file = formData.get("avatar") as File | null;
-
   let avatarUrl: string | null = null;
 
+  // Ruta de la carpeta donde se guardan las imágenes
+  const uploadsDir = path.join(process.cwd(), "uploads");
+  console.log("Uploads directory:", uploadsDir);
+
   if (file) {
-    // Definir la ruta de almacenamiento (fuera de /public para seguridad)
-    const uploadsDir = path.join(process.cwd(), "uploads");
-    console.log("Uploads directory:", uploadsDir);
     try {
       // Asegurarse de que la carpeta exista
       await mkdir(uploadsDir, { recursive: true });
@@ -48,11 +48,28 @@ export async function POST(req: Request) {
     }
   }
 
-  // Crear o actualizar el perfil en la base de datos (ejemplo con upsert)
   try {
+    // Verificar si ya existe un perfil para el usuario
+    const existingProfile = await prisma.profile.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    // Si existe y se está actualizando el avatar, eliminar el archivo anterior
+    if (existingProfile && existingProfile.avatar && avatarUrl) {
+      const previousFilePath = path.join(uploadsDir, existingProfile.avatar);
+      try {
+        await unlink(previousFilePath);
+        console.log("Avatar anterior eliminado:", previousFilePath);
+      } catch (err) {
+        // Si falla la eliminación, registra el error pero continúa
+        console.error("Error al eliminar avatar anterior:", err);
+      }
+    }
+
+    // Crear o actualizar el perfil en la base de datos (upsert)
     const profile = await prisma.profile.upsert({
       where: { userId: session.user.id },
-      update: { bio, avatar: avatarUrl },
+      update: { bio, avatar: avatarUrl, phone, address },
       create: {
         userId: session.user.id,
         bio,

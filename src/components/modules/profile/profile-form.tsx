@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import axiosClient from "@/lib/axios-client";
 import { useProfileStore } from "@/store/profile-store";
+import toast from "react-hot-toast";
 
 export default function ProfileForm() {
   const { data: session } = useSession();
@@ -68,9 +69,10 @@ export default function ProfileForm() {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("Perfil actualizado:", response.data);
+
+      toast.success("Perfil actualizado correctamente");
     } catch (error) {
-      console.error("Error al actualizar perfil", error);
+      toast.error("Error al actualizar perfil");
     }
   }
 
@@ -80,7 +82,11 @@ export default function ProfileForm() {
         <Avatar className="w-24 h-24">
           {/* Muestra la imagen seleccionada o la de placeholder */}
           <AvatarImage
-            src={`/api/files/${encodeURIComponent(profile?.avatar || "")}`}
+            src={
+              avatarPreview
+                ? avatarPreview
+                : `/api/files/${encodeURIComponent(profile?.avatar || "")}`
+            }
             alt="Avatar"
           />
           <AvatarFallback>FN</AvatarFallback>
